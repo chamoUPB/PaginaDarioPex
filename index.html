@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dario Pex – Organiza tus ideas creativas</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="Vista/styles.css">
+
+</head>
+<body>
+
+<!-- Navbar -->
+
+    <nav class="navbar navbar-expand-md sticky-top bg-white bg-opacity-75 border-bottom" style="backdrop-filter:blur(8px)">
+      <div class="container">
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#"><span class="logo-mark"></span> Dario Pex</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu" aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="menu">
+          <ul class="navbar-nav mx-auto mb-2 mb-md-0">
+            <li class="nav-item"><a class="nav-link" href="#">Cómo se usa</a></li>
+            <li class="nav-item"><a class="nav-link" href="#plantillas">Plantillas</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">Precios</a></li>
+          </ul>
+          <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" href="inicioseccion.html">Iniciar sesión</a>
+            <a class="btn btn-brand" href="registro.html">Regístrate gratis</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+<main>
+  <!-- Hero -->
+  <section class="py-5 text-center">
+    <div class="container py-4">
+      <h1 class="display-4 fw-bold mx-auto" style="max-width:800px">Organiza tus ideas creativas en <span class="text-gradient">un solo Diario</span></h1>
+      <p class="lead text-secondary mx-auto my-4" style="max-width:620px">Reúne notas, imágenes, enlaces y tareas en tableros visuales y colabora con tu equipo o tus clientes.</p>
+      <a href="#signup-form" class="btn btn-brand btn-lg px-4">Empieza gratis</a>
+      <div class="hero-board bg-white border rounded-4 shadow mx-auto mt-5" aria-hidden="true">
+        <div class="note n1">💡 Idea para la campaña de primavera</div>
+        <div class="note n2">🎨 Paleta: lila, coral y crema</div>
+        <div class="note n3">📌 Referencias de tipografía</div>
+        <div class="note n4">✅ Enviar propuesta el viernes</div>
+        <div class="note n5">🔗 Enlace al brief</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Secciones con captura -->
+  <section class="py-5">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-md-5">
+          <h2 class="fw-bold">Captura ideas sin fricción</h2>
+          <p class="text-secondary fs-5">Arrastra notas, imágenes y archivos a tu tablero y colócalos donde quieras. Sin reglas, sin estructuras rígidas.</p>
+        </div>
+        <div class="col-md-7"><div class="shot border rounded-4 shadow-sm d-grid place-items-center text-secondary d-flex align-items-center justify-content-center">[ Captura: tablero libre ]</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-5">
+    <div class="container">
+      <div class="row align-items-center g-5 flex-md-row-reverse">
+        <div class="col-md-5">
+          <h2 class="fw-bold">Moodboards que inspiran</h2>
+          <p class="text-secondary fs-5">Junta referencias visuales, colores y texturas para alinear al equipo antes de empezar a diseñar.</p>
+        </div>
+        <div class="col-md-7"><div class="shot border rounded-4 shadow-sm text-secondary d-flex align-items-center justify-content-center">[ Captura: moodboard ]</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-5">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-md-5">
+          <h2 class="fw-bold">Del caos al plan</h2>
+          <p class="text-secondary fs-5">Convierte las ideas sueltas en columnas, listas de tareas y tableros anidados para cada proyecto.</p>
+        </div>
+        <div class="col-md-7"><div class="shot border rounded-4 shadow-sm text-secondary d-flex align-items-center justify-content-center">[ Captura: columnas y tareas ]</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-5">
+    <div class="container">
+      <hr class="mb-5">
+      <div class="row align-items-center g-5 flex-md-row-reverse">
+        <div class="col-md-5">
+          <h2 class="fw-bold">Colabora en tiempo real</h2>
+          <p class="text-secondary fs-5">Comparte un tablero con un enlace, deja comentarios y trabaja con tu equipo y clientes en el mismo lugar.</p>
+        </div>
+        <div class="col-md-7"><div class="shot border rounded-4 shadow-sm text-secondary d-flex align-items-center justify-content-center">[ Captura: colaboración ]</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Carrusel de plantillas -->
+  <section id="plantillas" class="py-5" style="background:#f3f1ea">
+    <div class="container">
+      <h2 class="text-center fw-bold mb-4">Empieza con una plantilla</h2>
+      <div class="carousel-track d-flex gap-3 pb-2">
+        <div class="card p-3"><div class="thumb mb-3" style="background:#ffd9d0"></div><h3 class="h5">Moodboard</h3><p class="text-secondary small mb-0">Reúne referencias visuales.</p></div>
+        <div class="card p-3"><div class="thumb mb-3" style="background:#d6f0ff"></div><h3 class="h5">Storyboard</h3><p class="text-secondary small mb-0">Planifica escenas paso a paso.</p></div>
+        <div class="card p-3"><div class="thumb mb-3" style="background:#fff3b0"></div><h3 class="h5">Brief creativo</h3><p class="text-secondary small mb-0">Define objetivos y alcance.</p></div>
+        <div class="card p-3"><div class="thumb mb-3" style="background:#d8f5dc"></div><h3 class="h5">Calendario de contenido</h3><p class="text-secondary small mb-0">Organiza tus publicaciones.</p></div>
+        <div class="card p-3"><div class="thumb mb-3" style="background:#e0d9ff"></div><h3 class="h5">Guion</h3><p class="text-secondary small mb-0">Escribe y estructura historias.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonios -->
+  <section class="py-5">
+    <div class="container">
+      <h2 class="text-center fw-bold mb-4">Lo que dirán tus usuarios</h2>
+      <div class="row g-3">
+        <div class="col-md-4"><div class="card h-100 p-4">“Texto de ejemplo para un testimonio.”<small class="d-block mt-3 text-secondary">Nombre · Cargo</small></div></div>
+        <div class="col-md-4"><div class="card h-100 p-4">“Texto de ejemplo para un testimonio.”<small class="d-block mt-3 text-secondary">Nombre · Cargo</small></div></div>
+        <div class="col-md-4"><div class="card h-100 p-4">“Texto de ejemplo para un testimonio.”<small class="d-block mt-3 text-secondary">Nombre · Cargo</small></div></div>
+      </div>
+      <p class="text-center text-secondary small mt-3">Marcadores de posición: reemplázalos por opiniones reales de tus usuarios.</p>
+    </div>
+  </section>
+
+  <!-- Dispositivos -->
+  <section class="py-5 text-center">
+    <div class="container">
+      <h2 class="fw-bold mb-4">Úsalo en todos tus dispositivos</h2>
+      <div class="d-flex justify-content-center align-items-end gap-3 flex-wrap">
+        <div class="dev rounded-3 d-flex align-items-center justify-content-center text-secondary" style="width:340px;height:210px">Web</div>
+        <div class="dev rounded-3 d-flex align-items-center justify-content-center text-secondary" style="width:170px;height:230px">Tableta</div>
+        <div class="dev rounded-4 d-flex align-items-center justify-content-center text-secondary" style="width:100px;height:200px">Móvil</div>
+      </div>
+    </div>
+  </section>
+
+<!-- Registro -->
+<section id="signup-form" class="ssignup-section text-white text-center py-5">
+  <div class="container py-4">
+    <h2 class="fw-bold">Crea tu primer tablero hoy</h2>
+    <p class="opacity-75 mb-4">Gratis para empezar. Sin tarjeta de crédito.</p>
+    <a href="#" class="btn btn-cta btn-lg">Empieza gratis <span class="arrow">→</span></a>
+    <p class="small opacity-75 mt-3 mb-0">Al continuar aceptas nuestros términos y la política de privacidad.</p>
+  </div>
+</section>
+<!-- Footer -->
+<footer class="border-top py-4 text-secondary small">
+  <div class="container d-flex flex-wrap justify-content-between gap-3">
+    <div><strong class="text-dark">Dario Pex</strong><br>© 2026 Todos los derechos reservados.</div>
+    <ul class="list-inline mb-0">
+      <li class="list-inline-item me-3">Producto</li>
+      <li class="list-inline-item me-3">Plantillas</li>
+      <li class="list-inline-item me-3">Precios</li>
+      <li class="list-inline-item me-3">Ayuda</li>
+      <li class="list-inline-item">Privacidad</li>
+    </ul>
+  </div>
+</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
