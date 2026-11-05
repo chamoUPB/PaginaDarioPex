@@ -1,7 +1,5 @@
 import * as Usuario from '../Modelo/usuarioModel.js';
 
-console.log('script.js cargado');   // temporal: bórralo cuando todo funcione
-
 const $ = (sel) => document.querySelector(sel);
 
 function mostrarMensaje(texto, esError = false) {
@@ -54,15 +52,28 @@ function paginaRegistro() {
 
 // ---------------- Inicio de sesión ----------------
 function paginaLogin() {
+  const form = $('#login-form');
+  const boton = form.querySelector('button[type="submit"]');
+
+  // Si ya tiene sesión abierta, no hace falta volver a entrar
   Usuario.sesionActual().then((s) => { if (s) location.href = 'contenido.html'; });
 
-  $('#login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();   // evita que la página se recargue y que la contraseña aparezca en la URL
+
+    const correo = $('#username').value.trim();
+    const contrasena = $('#password').value;
+
+    boton.disabled = true;
+    mostrarMensaje('Entrando...');
     try {
-      await Usuario.iniciarSesion($('#email').value.trim(), $('#password').value);
+      await Usuario.iniciarSesion(correo, contrasena);
       location.href = 'contenido.html';
     } catch (err) {
       mostrarMensaje(err.message, true);
+      $('#password').value = '';
+    } finally {
+      boton.disabled = false;
     }
   });
 }

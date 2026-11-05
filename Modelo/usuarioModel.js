@@ -31,16 +31,16 @@ export async function registrar({ correo, contrasena, nombre_usuario, telefono =
 
 export async function iniciarSesion(correo, contrasena) {
   const { data, error } = await supabase.auth.signInWithPassword({ email: correo, password: contrasena });
-  if (error) throw new Error('Correo o contraseña incorrectos');
+  if (error) {
+    if (/not confirmed/i.test(error.message)) {
+      throw new Error('Debes confirmar tu correo antes de iniciar sesión');
+    }
+    throw new Error('Correo o contraseña incorrectos');
+  }
   return data;
 }
 
 export const cerrarSesion = () => supabase.auth.signOut();
-
-export async function sesionActual() {
-  const { data } = await supabase.auth.getSession();
-  return data.session;
-}
 
 // authUserId = el UUID de Supabase Auth (session.user.id)
 export async function obtenerPerfil(authUserId) {
@@ -49,4 +49,17 @@ export async function obtenerPerfil(authUserId) {
     .select('id_usuarios, nombre_usuario, correo, telefono, rol, id_foto')
     .eq('auth_user_id', authUserId)
     .single());
+}
+
+export async function sesionActual() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return null;
+
+  // getUser() consulta al servidor: falla si el usuario fue borrado o el token ya no sirve
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data?.user) {
+    await supabase.auth.signOut({ scope: 'local' });   // borra la sesión guardada en el navegador
+    return null;
+  }
+  return session;
 }

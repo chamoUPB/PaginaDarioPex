@@ -6,6 +6,18 @@
     <title>Document</title>
 </head>
 <body>
+    <script>
+        try {
+            const perfil = await Usuario.obtenerPerfil(sesion.user.id);
+            console.log('Bienvenido,', perfil.nombre_usuario, '| rol:', perfil.rol);
+        } catch (err) {
+            console.error(err.message);
+            await Usuario.cerrarSesion();
+            location.href = 'inicioseccion.html';
+  }
+
+
+    </script>
     
 </body>
 </html>

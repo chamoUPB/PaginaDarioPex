@@ -40,8 +40,7 @@
     <p class="title">Inicia sesión</p>
     <p class="subtitle">Accede a tus tableros y sigue creando</p>
 
-    <!-- Reemplaza el onsubmit por tu lógica o por action="..." -->
-    <form class="form" onsubmit="event.preventDefault()">
+    <form class="form" id="login-form">
       <div class="field">
         <label for="username">Correo electrónico</label>
         <input type="email" name="username" id="username" placeholder="tu@correo.com" autocomplete="email" required>
@@ -54,6 +53,7 @@
         </div>
       </div>
       <button type="submit" class="sign">Entrar</button>
+      <p id="mensaje"></p>
     </form>
 
     <div class="social-message">
