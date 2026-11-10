@@ -1,9 +1,13 @@
 import { supabase } from './supabaseClient.js';
 import { verificar } from './utils.js';
 
+// ---------------- Registro e inicio de sesión ----------------
 export async function nombreDisponible(nombre) {
   const { data, error } = await supabase.rpc('nombre_usuario_disponible', { p_nombre: nombre });
-  if (error) throw new Error('No se pudo verificar el nombre de usuario');
+  if (error) {
+    console.error('Error en nombre_usuario_disponible:', error);
+    throw new Error('No se pudo verificar el nombre de usuario');
+  }
   return data;
 }
 
@@ -20,11 +24,21 @@ export async function registrar({ correo, contrasena, nombre_usuario, telefono =
   });
 
   if (error) {
-    if (/already registered/i.test(error.message)) throw new Error('Ese correo ya está registrado');
-    if (/database error/i.test(error.message)) {
+    console.error('Error de signUp:', error);   // el detalle aparece en F12 > Console
+    const m = error.message;
+    if (/already registered/i.test(m)) throw new Error('Ese correo ya está registrado');
+    if (/rate limit|only request this after/i.test(m)) {
+      throw new Error('Demasiados intentos. Espera unos minutos e inténtalo de nuevo.');
+    }
+    if (/database error/i.test(m)) {
       throw new Error('No se pudo crear el perfil. Revisa que el trigger esté creado y que el correo o usuario no existan ya.');
     }
-    throw new Error(error.message);
+    throw new Error(m);
+  }
+
+  // Con la confirmación por correo activa, un correo repetido no da error: devuelve un usuario sin identidades
+  if (data.user && data.user.identities && data.user.identities.length === 0) {
+    throw new Error('Ese correo ya está registrado');
   }
   return data;
 }
@@ -42,15 +56,6 @@ export async function iniciarSesion(correo, contrasena) {
 
 export const cerrarSesion = () => supabase.auth.signOut();
 
-// authUserId = el UUID de Supabase Auth (session.user.id)
-export async function obtenerPerfil(authUserId) {
-  return verificar(await supabase
-    .from('usuarios')
-    .select('id_usuarios, nombre_usuario, correo, telefono, rol, id_foto')
-    .eq('auth_user_id', authUserId)
-    .single());
-}
-
 export async function sesionActual() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return null;
@@ -62,4 +67,23 @@ export async function sesionActual() {
     return null;
   }
   return session;
+}
+
+// ---------------- Perfil ----------------
+// authUserId = el UUID de Supabase Auth (session.user.id)
+export async function obtenerPerfil(authUserId) {
+  return verificar(await supabase
+    .from('usuarios')
+    .select('id_usuarios, nombre_usuario, correo, telefono, rol, id_foto')
+    .eq('auth_user_id', authUserId)
+    .single());
+}
+
+export async function actualizarPerfil(idUsuario, { nombre_usuario, telefono }) {
+  return verificar(await supabase
+    .from('usuarios')
+    .update({ nombre_usuario, telefono })
+    .eq('id_usuarios', idUsuario)
+    .select('id_usuarios, nombre_usuario, correo, telefono, rol, id_foto')
+    .single());
 }
