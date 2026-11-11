@@ -1,29 +1,4 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <script>
-        try {
-            const perfil = await Usuario.obtenerPerfil(sesion.user.id);
-            console.log('Bienvenido,', perfil.nombre_usuario, '| rol:', perfil.rol);
-        } catch (err) {
-            console.error(err.message);
-            await Usuario.cerrarSesion();
-            location.href = 'inicioseccion.html';
-  }
-
-
-    </script>
-    
-</body>
-</html>
-
-
-<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -96,7 +71,7 @@
             <div class="card h-100 shadow-sm">
               <div class="card-body d-flex flex-column">
                 <h2 class="h6">Editar perfil</h2>
-                <p class="text-secondary small flex-grow-1">Cambia tu nombre de usuario y tu teléfono.</p>
+                <p class="text-secondary small flex-grow-1">Cambia tu foto, tu nombre de usuario y tu teléfono.</p>
                 <button type="button" class="btn btn-outline-secondary btn-sm" data-ir="editar">Editar</button>
               </div>
             </div>
@@ -139,13 +114,25 @@
       </div>
 
       <!-- ============ EDITAR PERFIL ============ -->
-
-
-
       <div id="seccion-editar" data-panel="editar" hidden>
         <h2 class="h4 mb-3">Editar perfil</h2>
         <div class="card shadow-sm">
           <div class="card-body">
+
+            <!-- Foto de perfil -->
+            <div class="d-flex align-items-center gap-3 mb-4">
+              <div id="foto-preview"
+                   class="rounded-circle d-flex align-items-center justify-content-center text-white fw-semibold bg-secondary flex-shrink-0"
+                   style="width:72px;height:72px;font-size:1.4rem"
+                   aria-hidden="true">?</div>
+              <div>
+                <input type="file" id="foto-archivo" accept="image/jpeg,image/png,image/webp" class="d-none">
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-cambiar-foto">Cambiar foto</button>
+                <button type="button" class="btn btn-outline-danger btn-sm" id="btn-quitar-foto">Quitar</button>
+                <div class="form-text">JPG, PNG o WebP, máximo 2 MB.</div>
+              </div>
+            </div>
+
             <form id="form-perfil">
               <div class="mb-3">
                 <label for="editar-correo" class="form-label">Correo electrónico</label>
@@ -176,7 +163,36 @@
           </div>
         </div>
       </div>
-      <a class="nav-link" href="#seguridad" data-seccion="seguridad">Contraseña</a>
+
+      <!-- ============ CONTRASEÑA ============ -->
+      <div id="seccion-seguridad" data-panel="seguridad" hidden>
+        <h2 class="h4 mb-3">Cambiar contraseña</h2>
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <form id="form-contrasena">
+              <div class="mb-3">
+                <label for="pass-actual" class="form-label">Contraseña actual</label>
+                <input type="password" class="form-control" id="pass-actual"
+                       autocomplete="current-password" required>
+              </div>
+              <div class="mb-3">
+                <label for="pass-nueva" class="form-label">Nueva contraseña</label>
+                <input type="password" class="form-control" id="pass-nueva"
+                       minlength="8" autocomplete="new-password" required>
+                <div class="form-text">Mínimo 8 caracteres.</div>
+              </div>
+              <div class="mb-3">
+                <label for="pass-nueva2" class="form-label">Confirmar nueva contraseña</label>
+                <input type="password" class="form-control" id="pass-nueva2"
+                       minlength="8" autocomplete="new-password" required>
+                <p class="text-danger small mb-0 mt-1" id="pass-error" hidden>Las contraseñas no coinciden.</p>
+              </div>
+              <button type="submit" class="btn btn-brand">Cambiar contraseña</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
       <!-- ============ MIS TABLEROS ============ -->
       <div id="seccion-tableros" data-panel="tableros" hidden>
         <div class="d-flex justify-content-between align-items-center mb-3">

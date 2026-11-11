@@ -75,7 +75,7 @@ export async function obtenerPerfil(authUserId) {
   return verificar(await supabase
     .from('usuarios')
     .select('id_usuarios, nombre_usuario, correo, telefono, rol, id_foto')
-    .eq('auth_user_id', authUserId)
+    .eq('id_usuarios', authUserId)
     .single());
 }
 
