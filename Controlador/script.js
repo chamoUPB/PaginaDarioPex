@@ -21,7 +21,7 @@ function paginaRegistro() {
   const boton = form.querySelector('button[type="submit"]');
 
   form.addEventListener('submit', async (e) => {
-    e.preventDefault();   // evita que la página se recargue y que los datos aparezcan en la URL
+    e.preventDefault();
 
     const correo = $('#email').value.trim();
     const nombre = $('#usuario').value.trim();
@@ -56,11 +56,10 @@ function paginaLogin() {
   const form = $('#login-form');
   const boton = form.querySelector('button[type="submit"]');
 
-  // Si ya tiene sesión abierta, no hace falta volver a entrar
   Usuario.sesionActual().then((s) => { if (s) location.href = 'contenido.html'; });
 
   form.addEventListener('submit', async (e) => {
-    e.preventDefault();   // evita que la página se recargue y que la contraseña aparezca en la URL
+    e.preventDefault();
 
     const correo = $('#username').value.trim();
     const contrasena = $('#password').value;
@@ -80,28 +79,31 @@ function paginaLogin() {
 }
 
 //--------------- Registro de Sesion---------
-const SECCIONES = ['inicio', 'perfil', 'editar', 'tableros'];
+const SECCIONES = ['inicio', 'perfil', 'editar', 'seguridad', 'tableros'];   // NUEVO: 'seguridad'
 let perfilActual = null;
+let authId = null;                                                            // NUEVO
 
 async function cargaPagina() {
   const sesion = await Usuario.sesionActual();
-  if (!sesion) {                              // sin sesión válida: de vuelta al inicio de sesión
+  if (!sesion) {
     location.href = 'inicioseccion.html';
     return;
   }
+  authId = sesion.user.id;                                                    // NUEVO
 
   try {
-    perfilActual = await Usuario.obtenerPerfil(sesion.user.id);
+    perfilActual = await Usuario.obtenerPerfil(authId);
   } catch (err) {
-    console.error(err.message);
-    await Usuario.cerrarSesion();
-    location.href = 'inicioseccion.html';
-    return;
+    console.error('Error al cargar el perfil:', err);
+    mostrarMensaje('No se pudo cargar tu perfil: ' + err.message, true);
+    return;   // TEMPORAL: no cierra la sesión, para poder leer el error
   }
 
   pintarPerfil();
   activarMenu();
   activarEdicion();
+  activarFoto();                                                              // NUEVO
+  activarContrasena();                                                        // NUEVO
   activarSalir();
   activarTableros();
 }
@@ -110,11 +112,28 @@ function iniciales(nombre) {
   return (nombre ?? '?').slice(0, 2).toUpperCase();
 }
 
+// NUEVO: muestra la foto de perfil, o las iniciales si no hay
+function pintarAvatar(contenedor, p) {
+  contenedor.replaceChildren();
+  contenedor.classList.add('overflow-hidden');
+  if (p.foto_url) {
+    const img = document.createElement('img');
+    img.src = p.foto_url;
+    img.alt = `Foto de ${p.nombre_usuario}`;
+    img.className = 'rounded-circle';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover';
+    contenedor.appendChild(img);
+  } else {
+    contenedor.textContent = iniciales(p.nombre_usuario);
+  }
+}
+
 // Rellena todos los datos del usuario en la página
 function pintarPerfil() {
   const p = perfilActual;
   $('#nombre-navbar').textContent = p.nombre_usuario;
-  $('#avatar').textContent = iniciales(p.nombre_usuario);
+  pintarAvatar($('#avatar'), p);                                              // NUEVO
+  pintarAvatar($('#foto-preview'), p);                                        // NUEVO
   $('#inicio-nombre').textContent = p.nombre_usuario;
   $('#inicio-correo').textContent = p.correo;
   $('#inicio-rol').textContent = p.rol;
@@ -152,7 +171,7 @@ function activarMenu() {
   document.querySelectorAll('[data-ir]').forEach((boton) => {
     boton.addEventListener('click', () => irA(boton.dataset.ir));
   });
-  irA(location.hash.slice(1) || 'inicio');   // abre la sección indicada en la dirección (#perfil, etc.)
+  irA(location.hash.slice(1) || 'inicio');
 }
 
 function activarEdicion() {
@@ -167,7 +186,6 @@ function activarEdicion() {
     boton.disabled = true;
     mostrarMensaje('Guardando...');
     try {
-      // Solo se verifica si el nombre cambió (el propio nombre siempre figura como "ocupado")
       if (nombre.toLowerCase() !== perfilActual.nombre_usuario.toLowerCase()
           && !(await Usuario.nombreDisponible(nombre))) {
         throw new Error('Ese nombre de usuario ya está en uso');
@@ -177,9 +195,84 @@ function activarEdicion() {
         nombre_usuario: nombre,
         telefono,
       });
-      pintarPerfil();                       // refresca los textos de la página
+      pintarPerfil();
       irA('perfil');
       mostrarMensaje('Perfil actualizado correctamente');
+    } catch (err) {
+      mostrarMensaje(err.message, true);
+    } finally {
+      boton.disabled = false;
+    }
+  });
+}
+
+// NUEVO: foto de perfil
+function activarFoto() {
+  const input = $('#foto-archivo');
+  const btnCambiar = $('#btn-cambiar-foto');
+  const btnQuitar = $('#btn-quitar-foto');
+
+  btnCambiar.addEventListener('click', () => input.click());
+
+  input.addEventListener('change', async () => {
+    const archivo = input.files[0];
+    if (!archivo) return;
+
+    btnCambiar.disabled = btnQuitar.disabled = true;
+    mostrarMensaje('Subiendo foto...');
+    try {
+      await Usuario.subirFotoPerfil(authId, archivo);
+      perfilActual = await Usuario.obtenerPerfil(authId);
+      pintarPerfil();
+      mostrarMensaje('Foto actualizada correctamente');
+    } catch (err) {
+      mostrarMensaje(err.message, true);
+    } finally {
+      input.value = '';
+      btnCambiar.disabled = btnQuitar.disabled = false;
+    }
+  });
+
+  btnQuitar.addEventListener('click', async () => {
+    if (!perfilActual.foto_url) {
+      mostrarMensaje('Todavía no tienes foto de perfil', true);
+      return;
+    }
+    btnCambiar.disabled = btnQuitar.disabled = true;
+    try {
+      await Usuario.quitarFotoPerfil(authId);
+      perfilActual = await Usuario.obtenerPerfil(authId);
+      pintarPerfil();
+      mostrarMensaje('Foto eliminada');
+    } catch (err) {
+      mostrarMensaje(err.message, true);
+    } finally {
+      btnCambiar.disabled = btnQuitar.disabled = false;
+    }
+  });
+}
+
+// NUEVO: cambiar contraseña
+function activarContrasena() {
+  const form = $('#form-contrasena');
+  const boton = form.querySelector('button[type="submit"]');
+  const error = $('#pass-error');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const actual = $('#pass-actual').value;
+    const nueva = $('#pass-nueva').value;
+    const nueva2 = $('#pass-nueva2').value;
+
+    error.hidden = nueva === nueva2;
+    if (nueva !== nueva2) return;
+
+    boton.disabled = true;
+    mostrarMensaje('Cambiando contraseña...');
+    try {
+      await Usuario.cambiarContrasena(perfilActual.correo, actual, nueva);
+      form.reset();
+      mostrarMensaje('Contraseña actualizada correctamente');
     } catch (err) {
       mostrarMensaje(err.message, true);
     } finally {
@@ -215,7 +308,7 @@ function activarTableros() {
     msg.textContent = '';
     try {
       const t = await Tablero.crearTablero(nombre, perfilActual.id_usuarios);
-      location.href = `tablero.html?id=${t.id}`;   // lo lleva directo al tablero nuevo
+      location.href = `tablero.html?id=${t.id}`;
     } catch (err) {
       msg.textContent = err.message;
       msg.style.color = '#b00020';
@@ -242,7 +335,7 @@ async function cargarTableros() {
     const plantilla = $('#plantilla-tablero');
     tableros.forEach((t) => {
       const tarjeta = plantilla.content.cloneNode(true);
-      tarjeta.querySelector('.tablero-nombre').textContent = t.nombre;   // textContent evita inyección de HTML
+      tarjeta.querySelector('.tablero-nombre').textContent = t.nombre;
       tarjeta.querySelector('.tablero-rol').textContent =
         t.propietario_id === perfilActual.id_usuarios ? 'Propietario' : 'Colaborador';
       tarjeta.querySelector('.tablero-abrir').href = `tablero.html?id=${t.id}`;
