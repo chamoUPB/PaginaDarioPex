@@ -294,3 +294,87 @@ body.pagina-tablero {
   .estado-vacio { left: 0; bottom: 64px; }
   .controles-zoom { bottom: 76px; }
 }
+/* ================= Flechas: barra de edición, selección y etiqueta ================= */
+.barra-flecha {
+  position: fixed;
+  z-index: 3000;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  max-width: min(580px, 94vw);
+  padding: 8px 10px;
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .4);
+}
+.barra-flecha[hidden] { display: none; }
+
+.barra-flecha input[type="text"],
+.barra-flecha select {
+  padding: 4px 8px;
+  background: var(--fondo);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  font-size: .8rem;
+}
+.barra-flecha input[type="text"] { width: 130px; }
+.barra-flecha input[type="text"]:focus,
+.barra-flecha select:focus { outline: 2px solid var(--acento); outline-offset: 1px; }
+
+.swatches { display: flex; gap: 6px; }
+.swatch {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.swatch.activo { border-color: #fff; }
+.swatch:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+
+.capa-flechas #grupo-flechas path.flecha-halo { stroke: var(--acento); stroke-opacity: .35; }
+.capa-flechas .flecha-etiqueta {
+  fill: var(--texto);
+  font-size: 13px;
+  paint-order: stroke;
+  stroke: var(--fondo);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+/* Los clics atraviesan la capa vacía y llegan a las flechas; los elementos siguen siendo clicables */
+.capa-elementos { pointer-events: none; }
+.elemento { pointer-events: auto; }
+
+/* ================= Reordenar tareas ================= */
+.tarea-asa {
+  padding: 0 2px;
+  background: none;
+  border: 0;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -2px;
+  opacity: 0;
+  cursor: grab;
+  touch-action: none;
+}
+.tarea:hover .tarea-asa,
+.tarea-asa:focus-visible,
+.tarea.moviendo .tarea-asa { opacity: .6; }
+.tarea-asa:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; border-radius: 4px; }
+
+.tarea.moviendo {
+  background: rgba(255, 255, 255, .08);
+  outline: 1px dashed currentColor;
+  border-radius: 4px;
+  cursor: grabbing;
+}
+
+/* En pantallas táctiles no existe "pasar el ratón": el asa se deja visible */
+@media (hover: none) { .tarea-asa { opacity: .5; } }

@@ -17,6 +17,10 @@
   <input type="text" id="tablero-nombre" class="nombre-tablero" maxlength="200"
          placeholder="Nombre del tablero" aria-label="Nombre del tablero" value="Mi tablero">
   <span id="estado-guardado" class="estado-guardado" role="status" aria-live="polite">Todo guardado</span>
+  <div class="d-flex gap-1" role="group" aria-label="Historial">
+    <button type="button" id="btn-deshacer" class="btn btn-sm btn-outline-secondary" title="Deshacer (Ctrl+Z)" aria-label="Deshacer" disabled>↶</button>
+    <button type="button" id="btn-rehacer" class="btn btn-sm btn-outline-secondary" title="Rehacer (Ctrl+Y)" aria-label="Rehacer" disabled>↷</button>
+  </div>
   <div class="ms-auto d-flex align-items-center gap-2">
     <span class="text-secondary small d-none d-md-inline" id="nombre-usuario"></span>
     <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-salir">Cerrar sesión</button>
@@ -128,6 +132,48 @@
   <button type="button" class="btn btn-sm btn-outline-danger" id="btn-eliminar">Eliminar</button>
 </div>
 
+<!-- ============ Barra flotante de la flecha seleccionada ============ -->
+<div class="barra-flecha" id="barra-flecha" hidden role="toolbar" aria-label="Opciones de la flecha">
+  <input type="text" id="flecha-etiqueta" maxlength="100" placeholder="Etiqueta" aria-label="Etiqueta de la flecha">
+
+  <select id="flecha-direccion" aria-label="Puntas de la flecha">
+    <option value="destino">→ Hacia el destino</option>
+    <option value="origen">← Hacia el origen</option>
+    <option value="ambas">↔ Ambos extremos</option>
+    <option value="ninguna">— Sin puntas</option>
+  </select>
+
+  <select id="flecha-estilo" aria-label="Estilo de la línea">
+    <option value="solida">Continua</option>
+    <option value="punteada">Punteada</option>
+    <option value="discontinua">Discontinua</option>
+  </select>
+
+  <select id="flecha-curva" aria-label="Forma de la línea">
+    <option value="curva">Curva</option>
+    <option value="recta">Recta</option>
+  </select>
+
+  <select id="flecha-grosor" aria-label="Grosor">
+    <option value="1">Fina</option>
+    <option value="2">Normal</option>
+    <option value="3">Gruesa</option>
+    <option value="4">Muy gruesa</option>
+    <option value="6">Extra</option>
+  </select>
+
+  <div class="swatches" id="flecha-colores" role="group" aria-label="Color de la flecha">
+    <button type="button" class="swatch" data-hex="" style="background:#9aa0ab" aria-label="Gris" title="Gris"></button>
+    <button type="button" class="swatch" data-hex="#ffffff" style="background:#ffffff" aria-label="Blanco" title="Blanco"></button>
+    <button type="button" class="swatch" data-hex="#f2dc7b" style="background:#f2dc7b" aria-label="Amarillo" title="Amarillo"></button>
+    <button type="button" class="swatch" data-hex="#5b8def" style="background:#5b8def" aria-label="Azul" title="Azul"></button>
+    <button type="button" class="swatch" data-hex="#58b98a" style="background:#58b98a" aria-label="Verde" title="Verde"></button>
+    <button type="button" class="swatch" data-hex="#e58bb0" style="background:#e58bb0" aria-label="Rosa" title="Rosa"></button>
+    <button type="button" class="swatch" data-hex="#d9645b" style="background:#d9645b" aria-label="Rojo" title="Rojo"></button>
+  </div>
+
+  <button type="button" class="btn btn-sm btn-outline-danger" id="btn-flecha-eliminar">Eliminar</button>
+</div>
 <!-- ============ Zoom ============ -->
 <div class="controles-zoom" role="group" aria-label="Zoom">
   <button type="button" class="zoom-boton" id="btn-zoom-menos" aria-label="Alejar">−</button>

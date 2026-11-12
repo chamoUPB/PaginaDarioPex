@@ -1,11 +1,50 @@
 import * as Usuario from '../Modelo/usuarioModel.js';
 import * as Tablero from '../Modelo/tableroModel.js';
 import * as Elemento from '../Modelo/elementoModel.js';
+import * as Historial from './historial.js';
 
+// Aplica y guarda valores de un elemento (posición, tamaño, color...). Se usa al deshacer y al rehacer.
+// Se busca el elemento por id en el momento de ejecutar, no se guarda el objeto.
+async function aplicarElemento(id, valores) {
+  const el = estado.elementos.get(id);
+  if (!el) throw new Error('El elemento ya no existe');
+  const r = await guardar(Elemento.actualizarElemento(id, valores));
+  if (!r.ok) throw r.error;
+  Object.assign(el, valores);
+  const nodo = estado.nodos.get(id);
+  aplicarGeometria(nodo, el);
+  nodo.dataset.color = COLORES.includes(el.color) ? el.color : 'gris';
+  dibujarFlechas();
+  posicionarBarra();
+}
+
+async function deshacerUI() {
+  try {
+    const a = await Historial.deshacerUltimo();
+    if (a) mostrarMensaje(`Deshecho: ${a.nombre}`);
+  } catch (err) { mostrarMensaje('No se pudo deshacer: ' + err.message, true, 5000); }
+}
+
+async function rehacerUI() {
+  try {
+    const a = await Historial.rehacerUltimo();
+    if (a) mostrarMensaje(`Rehecho: ${a.nombre}`);
+  } catch (err) { mostrarMensaje('No se pudo rehacer: ' + err.message, true, 5000); }
+}
 const $ = (sel) => document.querySelector(sel);
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const COLORES = ['gris', 'amarillo', 'azul', 'verde', 'rosa', 'rojo'];
-const COLOR_HEX = /^#[0-9a-f]{3,8}$/i;
+const COLOR_HEX = /^#[0-9a-f]{6}$/i;
+const COLOR_BASE = '#9aa0ab';
+const ESTILOS = ['solida', 'punteada', 'discontinua'];
+const CURVAS = ['curva', 'recta'];
+const GROSORES = [1, 2, 3, 4, 6];
+const DIRECCIONES = {
+  destino: { punta_origen: 'ninguna', punta_destino: 'flecha' },
+  origen:  { punta_origen: 'flecha',  punta_destino: 'ninguna' },
+  ambas:   { punta_origen: 'flecha',  punta_destino: 'flecha' },
+  ninguna: { punta_origen: 'ninguna', punta_destino: 'ninguna' },
+};
 const CLASE_TIPO = { nota: 'nota', lista_tareas: 'lista', enlace: 'enlace', imagen: 'imagen' };
 const DEFECTOS = {
   nota:         { ancho: 220, alto: null, color: 'amarillo' },
@@ -32,6 +71,8 @@ const ZOOM_MAX = 2;
 const ZOOM_PASO = 0.1;
 
 const estado = {
+  flechaSeleccionada: null,  
+  puntoFlecha: null,       
   tableroId: null,
   tablero: null,
   soloLectura: false,
@@ -318,7 +359,63 @@ function crearFilaTarea(t, el) {
   });
 
   li.append(casilla, texto, borrar);
+    if (!estado.soloLectura) {
+    const asa = document.createElement('button');
+    asa.type = 'button';
+    asa.className = 'tarea-asa';
+    asa.setAttribute('aria-label', 'Mover tarea (arrastra, o usa las flechas arriba y abajo)');
+    asa.textContent = '⋮⋮';
+    activarOrdenTarea(li, asa);
+    li.prepend(asa);
+  }
   return li;
+}
+
+// Reordenar tareas dentro de una lista (solo visual: no se guarda en la base de datos)
+function activarOrdenTarea(li, asa) {
+  asa.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();                 // evita que se arrastre el elemento entero
+    li.classList.add('moviendo');
+
+    const mover = (ev) => {
+      const ul = li.parentElement;
+      // La primera tarea cuyo centro queda por debajo del puntero marca el nuevo lugar
+      const siguiente = [...ul.children].find((x) => {
+        if (x === li) return false;
+        const r = x.getBoundingClientRect();
+        return ev.clientY < r.top + r.height / 2;
+      });
+      if (siguiente) {
+        if (li.nextElementSibling !== siguiente) ul.insertBefore(li, siguiente);
+      } else if (ul.lastElementChild !== li) {
+        ul.appendChild(li);
+      }
+    };
+
+    const soltar = () => {
+      window.removeEventListener('pointermove', mover);
+      window.removeEventListener('pointerup', soltar);
+      window.removeEventListener('pointercancel', soltar);
+      li.classList.remove('moviendo');
+    };
+
+    window.addEventListener('pointermove', mover);
+    window.addEventListener('pointerup', soltar);
+    window.addEventListener('pointercancel', soltar);
+  });
+
+  // Con teclado: enfoca el asa y usa las flechas arriba y abajo
+  asa.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    e.stopPropagation();
+    const ul = li.parentElement;
+    if (e.key === 'ArrowUp' && li.previousElementSibling) ul.insertBefore(li, li.previousElementSibling);
+    if (e.key === 'ArrowDown' && li.nextElementSibling) ul.insertBefore(li.nextElementSibling, li);
+    asa.focus();
+  });
 }
 
 function actualizarVacio() {
@@ -328,7 +425,14 @@ function actualizarVacio() {
 // =====================================================================
 // Selección y barra del elemento
 // =====================================================================
+function quitarSeleccionElemento() {
+  if (estado.seleccionado) estado.nodos.get(estado.seleccionado)?.classList.remove('seleccionado');
+  estado.seleccionado = null;
+  posicionarBarra();
+}
+
 function seleccionar(id) {
+  quitarSeleccionFlecha();                              // solo una cosa seleccionada a la vez
   if (estado.seleccionado) estado.nodos.get(estado.seleccionado)?.classList.remove('seleccionado');
   estado.seleccionado = id;
   estado.nodos.get(id)?.classList.add('seleccionado');
@@ -337,9 +441,13 @@ function seleccionar(id) {
 }
 
 function deseleccionar() {
-  if (estado.seleccionado) estado.nodos.get(estado.seleccionado)?.classList.remove('seleccionado');
-  estado.seleccionado = null;
+  quitarSeleccionElemento();
+  quitarSeleccionFlecha();
+}
+
+function reposicionarBarras() {
   posicionarBarra();
+  posicionarBarraFlecha();
 }
 
 function marcarColorActivo() {
@@ -372,7 +480,13 @@ async function cambiarColor(color) {
     el.color = anterior;
     estado.nodos.get(el.id).dataset.color = COLORES.includes(anterior) ? anterior : 'gris';
     marcarColorActivo();
+    return;
   }
+  Historial.registrar({
+    nombre: 'color',
+    deshacer: () => aplicarElemento(el.id, { color: anterior }),
+    rehacer: () => aplicarElemento(el.id, { color }),
+  });
 }
 
 async function alFrente() {
@@ -396,7 +510,10 @@ async function eliminarSeleccionado() {
   estado.nodos.delete(el.id);
   estado.elementos.delete(el.id);
   for (const [id, c] of estado.conexiones) {
-    if (c.origen_id === el.id || c.destino_id === el.id) estado.conexiones.delete(id);   // la base de datos ya las borró
+    if (c.origen_id === el.id || c.destino_id === el.id) {
+      estado.conexiones.delete(id);                      // la base de datos ya las borró
+      if (estado.flechaSeleccionada === id) estado.flechaSeleccionada = null;
+    }
   }
   estado.seleccionado = null;
   posicionarBarra();
@@ -474,13 +591,24 @@ async function manejarLinea(id) {
   cancelarLinea();
   if (origen === id) return;
 
+  // No repetir la misma flecha entre los mismos dos elementos y en el mismo sentido
+  const repetida = [...estado.conexiones.values()].some((c) => c.origen_id === origen && c.destino_id === id);
+  if (repetida) {
+    mostrarMensaje('Ya existe una flecha entre esos dos elementos', true);
+    return;
+  }
+
   const r = await guardar(Elemento.crearConexion(estado.tableroId, origen, id));
   if (r.ok) {
     estado.conexiones.set(r.datos.id, r.datos);
-    dibujarFlechas();
+    elegirHerramienta(null);
+    seleccionarFlecha(r.datos.id);                       // queda seleccionada para editarla enseguida
   }
-  elegirHerramienta(null);
 }
+
+// =====================================================================
+// Líneas (flechas): dibujar
+// =====================================================================
 
 function rectDe(id) {
   const el = estado.elementos.get(id);
@@ -513,42 +641,230 @@ function trayecto({ p, q, d }, tipo) {
   return `M${p.x},${p.y} C${p.x + p.v[0] * k},${p.y + p.v[1] * k} ${q.x + q.v[0] * k},${q.y + q.v[1] * k} ${q.x},${q.y}`;
 }
 
+// Una punta de flecha por cada color usado (se crea la primera vez que hace falta)
+function asegurarMarcador(color) {
+  const id = `punta-${color.slice(1).toLowerCase()}`;
+  const defs = $('#capa-flechas defs');
+  if (!defs.querySelector(`#${id}`)) {
+    const m = document.createElementNS(SVG_NS, 'marker');
+    m.setAttribute('id', id);
+    m.setAttribute('viewBox', '0 0 10 10');
+    m.setAttribute('refX', '9');
+    m.setAttribute('refY', '5');
+    m.setAttribute('markerWidth', '6');
+    m.setAttribute('markerHeight', '6');
+    m.setAttribute('orient', 'auto-start-reverse');
+    const p = document.createElementNS(SVG_NS, 'path');
+    p.setAttribute('d', 'M0,0 L10,5 L0,10 z');
+    p.setAttribute('fill', color);
+    p.setAttribute('stroke', 'none');
+    m.appendChild(p);
+    defs.appendChild(m);
+  }
+  return id;
+}
+
+function grosorDe(c) {
+  const g = Number(c.grosor);
+  return GROSORES.includes(g) ? g : 2;
+}
+
+function direccionDe(c) {
+  const o = c.punta_origen === 'flecha';
+  const d = c.punta_destino === 'flecha';
+  return o && d ? 'ambas' : o ? 'origen' : d ? 'destino' : 'ninguna';
+}
+
 function dibujarFlechas() {
   const grupo = $('#grupo-flechas');
   grupo.replaceChildren();
+  estado.puntoFlecha = null;
 
   for (const c of estado.conexiones.values()) {
     const a = rectDe(c.origen_id);
     const b = rectDe(c.destino_id);
     if (!a || !b) continue;
+
     const d = trayecto(ancla(a, b), c.tipo_curva);
+    const color = COLOR_HEX.test(c.color ?? '') ? c.color : COLOR_BASE;
+    const grosor = grosorDe(c);
+    const seleccionada = c.id === estado.flechaSeleccionada;
+
+    // Resplandor alrededor de la flecha seleccionada
+    if (seleccionada) {
+      const halo = document.createElementNS(SVG_NS, 'path');
+      halo.setAttribute('d', d);
+      halo.setAttribute('class', 'flecha-halo');
+      halo.style.strokeWidth = String(grosor + 8);
+      grupo.appendChild(halo);
+    }
 
     const linea = document.createElementNS(SVG_NS, 'path');
     linea.setAttribute('d', d);
-    if (c.punta_destino === 'flecha') linea.setAttribute('marker-end', 'url(#punta-flecha)');
-    if (c.punta_origen === 'flecha') linea.setAttribute('marker-start', 'url(#punta-flecha)');
-    if (c.estilo_linea === 'punteada') linea.style.strokeDasharray = '2 6';
-    if (c.estilo_linea === 'discontinua') linea.style.strokeDasharray = '8 6';
-    if (c.color && COLOR_HEX.test(c.color)) linea.style.stroke = c.color;
+    linea.style.stroke = color;
+    linea.style.strokeWidth = String(grosor);
+    const marcador = `url(#${asegurarMarcador(color)})`;
+    if (c.punta_destino === 'flecha') linea.setAttribute('marker-end', marcador);
+    if (c.punta_origen === 'flecha') linea.setAttribute('marker-start', marcador);
+    if (c.estilo_linea === 'punteada') {
+      linea.style.strokeDasharray = `1 ${grosor * 3 + 2}`;
+      linea.style.strokeLinecap = 'round';
+    } else if (c.estilo_linea === 'discontinua') {
+      linea.style.strokeDasharray = `${grosor * 4 + 4} ${grosor * 3 + 3}`;
+    }
+    grupo.appendChild(linea);
+
+    // Punto medio: para la etiqueta y para colocar la barra de la flecha seleccionada
+    if (seleccionada || c.etiqueta) {
+      let medio = null;
+      try { medio = linea.getPointAtLength(linea.getTotalLength() / 2); } catch { /* sin medida */ }
+      if (medio) {
+        if (seleccionada) estado.puntoFlecha = { x: medio.x, y: medio.y };
+        if (c.etiqueta) {
+          const texto = document.createElementNS(SVG_NS, 'text');
+          texto.setAttribute('x', medio.x);
+          texto.setAttribute('y', medio.y - 6);
+          texto.setAttribute('text-anchor', 'middle');
+          texto.setAttribute('class', 'flecha-etiqueta');
+          texto.textContent = c.etiqueta;                // textContent evita inyección de HTML
+          grupo.appendChild(texto);
+        }
+      }
+    }
 
     // Zona más ancha e invisible para poder hacer clic sobre la flecha
     const area = document.createElementNS(SVG_NS, 'path');
     area.setAttribute('d', d);
     area.style.stroke = 'transparent';
-    area.style.strokeWidth = '16';
+    area.style.strokeWidth = String(16 + grosor);
     area.style.pointerEvents = 'stroke';
     if (!estado.soloLectura) {
       area.style.cursor = 'pointer';
-      area.addEventListener('click', (e) => { e.stopPropagation(); eliminarConexionUI(c.id); });
+      const ayuda = document.createElementNS(SVG_NS, 'title');
+      ayuda.textContent = 'Haz clic para editar la flecha';
+      area.appendChild(ayuda);
+      area.addEventListener('mouseenter', () => { linea.style.opacity = '.6'; });
+      area.addEventListener('mouseleave', () => { linea.style.opacity = ''; });
+      area.addEventListener('click', (e) => {
+        if (estado.herramienta) return;                  // con una herramienta activa, el clic sigue su camino normal
+        e.stopPropagation();
+        seleccionarFlecha(c.id);
+      });
     }
-    grupo.append(linea, area);
+    grupo.appendChild(area);
+  }
+
+  posicionarBarraFlecha();
+}
+
+// =====================================================================
+// Líneas (flechas): seleccionar, editar y eliminar
+// =====================================================================
+function seleccionarFlecha(id) {
+  if (!estado.conexiones.has(id)) return;
+  quitarSeleccionElemento();
+  estado.flechaSeleccionada = id;
+  sincronizarBarraFlecha();
+  dibujarFlechas();                                      // dibuja el resplandor y coloca la barra
+}
+
+function quitarSeleccionFlecha() {
+  if (estado.flechaSeleccionada === null) return;
+  estado.flechaSeleccionada = null;
+  dibujarFlechas();                                      // quita el resplandor y oculta la barra
+}
+
+// Rellena los controles de la barra con los valores de la flecha seleccionada
+function sincronizarBarraFlecha() {
+  const c = estado.conexiones.get(estado.flechaSeleccionada);
+  if (!c) return;
+  $('#flecha-etiqueta').value = c.etiqueta ?? '';
+  $('#flecha-direccion').value = direccionDe(c);
+  $('#flecha-estilo').value = ESTILOS.includes(c.estilo_linea) ? c.estilo_linea : 'solida';
+  $('#flecha-curva').value = CURVAS.includes(c.tipo_curva) ? c.tipo_curva : 'curva';
+  $('#flecha-grosor').value = String(grosorDe(c));
+  const actual = COLOR_HEX.test(c.color ?? '') ? c.color.toLowerCase() : '';
+  document.querySelectorAll('#flecha-colores .swatch').forEach((b) => {
+    b.classList.toggle('activo', (b.dataset.hex || '') === actual);
+  });
+}
+
+function posicionarBarraFlecha() {
+  const barra = $('#barra-flecha');
+  const c = estado.conexiones.get(estado.flechaSeleccionada);
+  if (!c || estado.soloLectura || !estado.puntoFlecha) { barra.hidden = true; return; }
+  barra.hidden = false;
+  const r = $('#lienzo').getBoundingClientRect();
+  const x = r.left + estado.puntoFlecha.x * estado.zoom;
+  const y = r.top + estado.puntoFlecha.y * estado.zoom;
+  const arriba = y - barra.offsetHeight - 14;
+  barra.style.top = `${arriba < 56 ? y + 14 : arriba}px`;
+  barra.style.left = `${Math.min(Math.max(x - barra.offsetWidth / 2, 80), window.innerWidth - barra.offsetWidth - 8)}px`;
+}
+
+// UPDATE: se ve el cambio al instante y, si el guardado falla, se deshace
+async function actualizarFlecha(cambios) {
+  const c = estado.conexiones.get(estado.flechaSeleccionada);
+  if (!c || estado.soloLectura) return;
+  const anterior = {};
+  for (const k of Object.keys(cambios)) anterior[k] = c[k];
+
+  Object.assign(c, cambios);
+  dibujarFlechas();
+  const r = await guardar(Elemento.actualizarConexion(c.id, cambios));
+  if (!r.ok) {
+    Object.assign(c, anterior);
+    dibujarFlechas();
+    if (estado.flechaSeleccionada === c.id) sincronizarBarraFlecha();
   }
 }
 
-async function eliminarConexionUI(id) {
+// DELETE
+async function eliminarFlechaSeleccionada() {
+  const id = estado.flechaSeleccionada;
+  if (id === null || estado.soloLectura) return;
   if (!confirm('¿Eliminar esta flecha?')) return;
   const r = await guardar(Elemento.eliminarConexion(id));
-  if (r.ok) { estado.conexiones.delete(id); dibujarFlechas(); }
+  if (!r.ok) return;
+  estado.conexiones.delete(id);
+  estado.flechaSeleccionada = null;
+  dibujarFlechas();
+}
+
+function activarBarraFlecha() {
+  const etiqueta = $('#flecha-etiqueta');
+  etiqueta.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); etiqueta.blur(); }
+  });
+  etiqueta.addEventListener('change', () => {
+    const c = estado.conexiones.get(estado.flechaSeleccionada);
+    const texto = etiqueta.value.trim().slice(0, 100);
+    if (!c || texto === (c.etiqueta ?? '')) return;
+    actualizarFlecha({ etiqueta: texto || null });
+  });
+
+  $('#flecha-direccion').addEventListener('change', (e) => {
+    const puntas = DIRECCIONES[e.target.value];
+    if (puntas) actualizarFlecha({ ...puntas });
+  });
+  $('#flecha-estilo').addEventListener('change', (e) => {
+    if (ESTILOS.includes(e.target.value)) actualizarFlecha({ estilo_linea: e.target.value });
+  });
+  $('#flecha-curva').addEventListener('change', (e) => {
+    if (CURVAS.includes(e.target.value)) actualizarFlecha({ tipo_curva: e.target.value });
+  });
+  $('#flecha-grosor').addEventListener('change', (e) => {
+    const g = Number(e.target.value);
+    if (GROSORES.includes(g)) actualizarFlecha({ grosor: g });
+  });
+  document.querySelectorAll('#flecha-colores .swatch').forEach((b) => {
+    b.addEventListener('click', () => {
+      const color = b.dataset.hex || null;
+      document.querySelectorAll('#flecha-colores .swatch').forEach((x) => x.classList.toggle('activo', x === b));
+      actualizarFlecha({ color });
+    });
+  });
+  $('#btn-flecha-eliminar').addEventListener('click', eliminarFlechaSeleccionada);
 }
 
 // =====================================================================
@@ -587,7 +903,16 @@ function iniciarArrastre(e, nodo, el) {
     if (!movido) return;
     marcarArrastre();
     seleccionar(el.id);
-    await guardar(Elemento.actualizarElemento(el.id, { pos_x: el.pos_x, pos_y: el.pos_y }));
+    const antes = { pos_x: inicio.left, pos_y: inicio.top };
+    const despues = { pos_x: el.pos_x, pos_y: el.pos_y };
+    const r = await guardar(Elemento.actualizarElemento(el.id, despues));
+    if (r.ok) {
+      Historial.registrar({
+        nombre: 'mover',
+        deshacer: () => aplicarElemento(el.id, antes),
+        rehacer: () => aplicarElemento(el.id, despues),
+      });
+    }
   };
 
   window.addEventListener('pointermove', mover);
@@ -759,7 +1084,7 @@ function ajustarZoom(valor) {
   estado.zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(valor * 10) / 10));
   $('#lienzo').style.setProperty('--zoom', estado.zoom);
   $('#zoom-valor').textContent = `${Math.round(estado.zoom * 100)}%`;
-  posicionarBarra();
+  reposicionarBarras();
 }
 
 // =====================================================================
@@ -811,15 +1136,28 @@ function conectarEventos() {
     editarContenido(estado.elementos.get(Number(nodo.dataset.id)), campo);
   });
 
-  visor.addEventListener('scroll', posicionarBarra);
-  window.addEventListener('resize', posicionarBarra);
+  visor.addEventListener('scroll', reposicionarBarras);
+  window.addEventListener('resize', reposicionarBarras);
 
   // Teclado
   document.addEventListener('keydown', (e) => {
     const t = e.target;
     if (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      if (e.shiftKey) rehacerUI(); else deshacerUI();
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+      e.preventDefault();
+      rehacerUI();
+      return;
+    }
     if (e.key === 'Escape') { elegirHerramienta(null); deseleccionar(); }
-    else if (e.key === 'Delete' && estado.seleccionado && !estado.soloLectura) eliminarSeleccionado();
+    else if (e.key === 'Delete' && !estado.soloLectura) {
+      if (estado.flechaSeleccionada !== null) eliminarFlechaSeleccionada();
+      else if (estado.seleccionado) eliminarSeleccionado();
+    }  
   });
 
   // Barra del elemento
@@ -828,6 +1166,7 @@ function conectarEventos() {
   });
   $('#btn-al-frente').addEventListener('click', alFrente);
   $('#btn-eliminar').addEventListener('click', eliminarSeleccionado);
+  activarBarraFlecha();
 
   // Zoom
   $('#btn-zoom-mas').addEventListener('click', () => ajustarZoom(estado.zoom + ZOOM_PASO));
@@ -870,4 +1209,11 @@ function conectarEventos() {
     await Usuario.cerrarSesion();
     location.href = 'inicioseccion.html';
   });
+
+  Historial.iniciarHistorial(() => {
+  $('#btn-deshacer').disabled = !Historial.puedeDeshacer();
+  $('#btn-rehacer').disabled = !Historial.puedeRehacer();
+  });
+  $('#btn-deshacer').addEventListener('click', deshacerUI);
+  $('#btn-rehacer').addEventListener('click', rehacerUI);
 }
