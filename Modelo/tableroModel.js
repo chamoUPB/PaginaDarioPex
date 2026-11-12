@@ -26,3 +26,11 @@ export async function renombrarTablero(id, nombre) {
     .select('id, nombre')
     .single());
 }
+
+export async function obtenerTablero(id) {
+  return verificar(await supabase
+    .from('tableros')
+    .select('id, nombre, tablero_padre_id, propietario_id')
+    .eq('id', id)
+    .single());
+}

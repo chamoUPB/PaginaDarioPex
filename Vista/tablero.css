@@ -138,8 +138,10 @@ body.pagina-tablero {
   pointer-events: none;
   color: var(--texto-suave);
 }
-.capa-flechas path { fill: none; stroke: currentColor; stroke-width: 2; }
+.capa-flechas #grupo-flechas path { fill: none; stroke: currentColor; stroke-width: 2; }
 
+.estado-vacio[hidden] { display: none; }
+.herramienta:disabled { opacity: .4; cursor: not-allowed; }
 .capa-elementos { position: absolute; inset: 0; }
 
 .estado-vacio {
