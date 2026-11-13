@@ -378,3 +378,10 @@ body.pagina-tablero {
 
 /* En pantallas táctiles no existe "pasar el ratón": el asa se deja visible */
 @media (hover: none) { .tarea-asa { opacity: .5; } }
+
+/* ================= Mover el tablero arrastrando ================= */
+.visor { cursor: grab; }
+.visor.modo-colocar,
+.visor.modo-linea { cursor: crosshair; }
+.visor.desplazando,
+.visor.desplazando * { cursor: grabbing !important; user-select: none; }

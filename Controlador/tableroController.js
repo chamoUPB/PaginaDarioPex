@@ -950,6 +950,39 @@ function iniciarRedimension(e, nodo, el) {
 }
 
 // =====================================================================
+// Mover el tablero arrastrándolo
+// =====================================================================
+function iniciarDesplazamiento(e, visor) {
+  const inicio = { x: e.clientX, y: e.clientY, izq: visor.scrollLeft, arr: visor.scrollTop };
+  const esIzquierdo = e.button === 0;
+  let movido = false;
+
+  const mover = (ev) => {
+    const dx = ev.clientX - inicio.x;
+    const dy = ev.clientY - inicio.y;
+    if (!movido) {
+      if (Math.hypot(dx, dy) < 4) return;       // todavía es un clic, no un arrastre
+      movido = true;
+      visor.classList.add('desplazando');
+    }
+    visor.scrollLeft = inicio.izq - dx;
+    visor.scrollTop = inicio.arr - dy;
+  };
+
+  const soltar = () => {
+    window.removeEventListener('pointermove', mover);
+    window.removeEventListener('pointerup', soltar);
+    window.removeEventListener('pointercancel', soltar);
+    visor.classList.remove('desplazando');
+    if (movido && esIzquierdo) marcarArrastre();   // evita que el clic posterior deseleccione
+  };
+
+  window.addEventListener('pointermove', mover);
+  window.addEventListener('pointerup', soltar);
+  window.addEventListener('pointercancel', soltar);
+}
+
+// =====================================================================
 // Edición de textos (doble clic)
 // =====================================================================
 function editarContenido(el, campo) {
@@ -1125,7 +1158,28 @@ function conectarEventos() {
     if (e.target.closest('.redimensionar')) { iniciarRedimension(e, nodo, el); return; }
     if (e.target.closest('input, textarea, button, a') || e.target.isContentEditable) return;
     iniciarArrastre(e, nodo, el);
+  }); 
+
+    // Mover el tablero: arrastrar el espacio vacío, o con el botón central del ratón desde cualquier punto
+  visor.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch') return;                 // en táctil el desplazamiento ya es nativo
+
+    const central = e.button === 1;
+    const izquierdoEnVacio = e.button === 0 && !estado.herramienta
+      && !e.target.closest('.elemento') && !e.target.closest('#grupo-flechas path');
+    if (!central && !izquierdoEnVacio) return;
+
+    // No interferir con las barras de desplazamiento del propio visor
+    const caja = visor.getBoundingClientRect();
+    if (e.clientX - caja.left >= visor.clientWidth || e.clientY - caja.top >= visor.clientHeight) return;
+
+    e.preventDefault();                                    // sin selección de texto ni autodesplazamiento
+    document.activeElement?.blur?.();                      // si había un texto en edición, se guarda
+    iniciarDesplazamiento(e, visor);
   });
+
+  // Evita el autodesplazamiento circular que Windows activa con el botón central
+  visor.addEventListener('mousedown', (e) => { if (e.button === 1) e.preventDefault(); });
 
   // Doble clic: editar el texto
   visor.addEventListener('dblclick', (e) => {
