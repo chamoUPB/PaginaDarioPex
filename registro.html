@@ -3,87 +3,296 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dario Pex – Organiza tus ideas creativas</title>
+<title>Crear cuenta – Dario Pex</title>
+<link rel="icon" href="data:,">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="Vista/styles.css">
 <script type="module" src="Controlador/script.js"></script>
-
-
-
+<style>
+  mark.pendiente { background: #fff3a3; padding: 0 3px; border-radius: 3px; }
+  .form-container .form-check-label { font-size: .85rem; line-height: 1.4; }
+  .legal h3 { font-size: 1rem; margin-top: 1.25rem; }
+  .legal p, .legal li { font-size: .9rem; }
+  .sign:disabled { opacity: .55; cursor: not-allowed; }
+</style>
 </head>
 <body data-pagina="registro">
 
-<!-- Navbar -->
-
-    <nav class="navbar navbar-expand-md sticky-top bg-white bg-opacity-75 border-bottom" style="backdrop-filter:blur(8px)">
-      <div class="container">
-        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html"><span class="logo-mark"></span> Dario Pex</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu" aria-controls="menu" aria-expanded="false" aria-label="Abrir menú">
-          <span class="navbar-toggler-icon"></span>
-         </button>
-            <a class="btn btn-outline-secondary" href="inicioseccion.html">Iniciar sesión</a>
-          </div>
-        </div>
-      </div>
-    </nav>
+<!-- Menú superior -->
+<nav class="navbar sticky-top bg-white bg-opacity-75 border-bottom" style="backdrop-filter:blur(8px)">
+  <div class="container">
+    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
+      <span class="logo-mark"></span> Dario Pex
+    </a>
+    <a class="btn btn-outline-secondary" href="inicioseccion.html">Iniciar sesión</a>
+  </div>
+</nav>
 
 <main class="auth-page">
   <div class="form-container">
-  <div class="brand-badge"><span class="logo-mark"></span></div>
-  <p class="title">Crea tu cuenta</p>
-  <p class="subtitle">Empieza a organizar tus ideas en minutos</p>
+    <div class="brand-badge"><span class="logo-mark"></span></div>
+    <p class="title">Crea tu cuenta</p>
+    <p class="subtitle">Empieza a organizar tus ideas en minutos</p>
 
-  <form class="form" id="registro-form" >
-    <div class="field">
-      <label for="email">Correo electrónico</label>
-      <input type="email" name="email" id="email" placeholder="tu@correo.com" autocomplete="email" required>
-    </div>
+    <form class="form" id="registro-form">
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input type="email" name="email" id="email" placeholder="tu@correo.com" autocomplete="email" required>
+      </div>
 
-    <div class="field">
-      <label for="usuario">Nombre de usuario</label>
-      <input type="text" name="usuario" id="usuario" placeholder="tu_usuario" autocomplete="username"
-             minlength="3" maxlength="20" pattern="[A-Za-z0-9_]+" required>
-    </div>
+      <div class="field">
+        <label for="usuario">Nombre de usuario</label>
+        <input type="text" name="usuario" id="usuario" placeholder="tu_usuario" autocomplete="username"
+               minlength="3" maxlength="20" pattern="[A-Za-z0-9_]+" required>
+      </div>
 
-    <div class="field">
-      <label for="password">Contraseña</label>
-      <input type="password" name="password" id="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" minlength="8" required>
-    </div>
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <input type="password" name="password" id="password" placeholder="Mínimo 8 caracteres"
+               autocomplete="new-password" minlength="8" required>
+      </div>
 
-    <div class="field">
-      <label for="password2">Confirmar contraseña</label>
-      <input type="password" name="password2" id="password2" placeholder="Repite la contraseña" autocomplete="new-password" minlength="8" required>
-      <p class="field-error" id="password-error" hidden>Las contraseñas no coinciden.</p>
-    </div>
+      <div class="field">
+        <label for="password2">Confirmar contraseña</label>
+        <input type="password" name="password2" id="password2" placeholder="Repite la contraseña"
+               autocomplete="new-password" minlength="8" required>
+        <p class="field-error" id="password-error" hidden>Las contraseñas no coinciden.</p>
+      </div>
 
-    <button type="submit" class="sign" >Crear cuenta</button>
+      <!-- Autorización del titular de los datos (no vienen marcadas: la autorización debe ser expresa) -->
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="acepto-edad" required>
+          <label class="form-check-label" for="acepto-edad">Declaro que soy mayor de 18 años.</label>
+        </div>
 
-    <p id="mensaje"></p>
-  </form>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="acepto-terminos" required>
+        <label class="form-check-label" for="acepto-terminos">
+          He leído y acepto los
+          <a href="#" data-bs-toggle="modal" data-bs-target="#modal-legal" data-pestana="terminos">Términos y Condiciones</a>
+          y la
+          <a href="#" data-bs-toggle="modal" data-bs-target="#modal-legal" data-pestana="privacidad">Política de Tratamiento de Datos Personales</a>,
+          y autorizo de manera previa, expresa e informada el tratamiento de mis datos personales para las finalidades allí descritas,
+          incluida su transferencia y transmisión a proveedores ubicados fuera de Colombia.
+        </label>
+      </div>
 
-  <div class="social-message">
-    <div class="line"></div>
-    <p class="message">o regístrate con</p>
-    <div class="line"></div>
+      <!-- Verificación anti-robots (Cloudflare Turnstile) -->
+      <div class="field">
+        <div id="captcha-registro"></div>
+        <p class="field-error" id="captcha-error" hidden>Completa la verificación para continuar.</p>
+      </div>
+
+      <button type="submit" class="sign" disabled>Crear cuenta</button>
+      <p class="small text-secondary mt-2 mb-0" id="ayuda-registro">
+        Para continuar, marca las dos casillas y completa la verificación.
+      </p>
+
+    <p class="signup">¿Ya tienes cuenta? <a rel="noopener noreferrer" href="inicioseccion.html">Inicia sesión</a></p>
   </div>
+</main>
 
-  <div class="social-icons">
-    <!-- Deja aquí los mismos tres botones de Google, Twitter y GitHub del login -->
+<!-- ============ Documentos legales ============ -->
+<div class="modal fade" id="modal-legal" tabindex="-1" aria-labelledby="modal-legal-titulo" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="modal-legal-titulo">Documentos legales</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body legal">
+        <ul class="nav nav-tabs mb-3" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pestana-terminos" data-bs-toggle="tab" data-bs-target="#panel-terminos"
+                    type="button" role="tab" aria-controls="panel-terminos" aria-selected="true">Términos y Condiciones</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pestana-privacidad" data-bs-toggle="tab" data-bs-target="#panel-privacidad"
+                    type="button" role="tab" aria-controls="panel-privacidad" aria-selected="false">Datos personales</button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+
+          <!-- ================= TÉRMINOS Y CONDICIONES ================= -->
+          <div class="tab-pane fade show active" id="panel-terminos" role="tabpanel" aria-labelledby="pestana-terminos" tabindex="0">
+            <h2 class="h5">Términos y Condiciones de Uso</h2>
+            <p class="text-secondary">Versión 2026-11-14 · Última actualización: 14 de noviembre de 2026</p>
+
+            <h3>1. Quién ofrece el servicio</h3>
+            <p>Dario Pex (el «Servicio») es ofrecido por <mark class="pendiente">[COMPLETAR: nombre completo o razón social]</mark>,
+              identificado con <mark class="pendiente">[COMPLETAR: cédula o NIT]</mark>, con domicilio en
+              <mark class="pendiente">[COMPLETAR: ciudad, departamento]</mark>, Colombia (en adelante, «nosotros»).
+              Correo de contacto: <mark class="pendiente">[COMPLETAR: correo]</mark>.</p>
+
+            <h3>2. Aceptación</h3>
+            <p>Al crear una cuenta y marcar la casilla de aceptación declaras que leíste y aceptas estos Términos y la Política de
+              Tratamiento de Datos Personales, que hace parte integral de ellos. Si no estás de acuerdo, no uses el Servicio.</p>
+
+            <h3>3. Qué es el Servicio</h3>
+            <p>Una aplicación web para organizar ideas en tableros, con notas, listas de tareas, enlaces, imágenes y flechas que los conectan.</p>
+
+            <h3>4. Tu cuenta</h3>
+            <ul>
+              <li>Debes ser mayor de 18 años.</li>
+              <li>La información que nos des debe ser veraz y estar actualizada.</li>
+              <li>Debes mantener la confidencialidad de tu contraseña. Eres responsable de lo que ocurra con tu cuenta; avísanos si sospechas un uso no autorizado.</li>
+              <li>No se permite crear cuentas de forma automatizada (bots) ni más de una cuenta por persona para eludir restricciones.</li>
+            </ul>
+
+            <h3>5. Tu contenido</h3>
+            <ul>
+              <li>Eres el titular del contenido que creas en tus tableros.</li>
+              <li>Nos otorgas una licencia limitada, no exclusiva y gratuita para almacenar, procesar y mostrar tu contenido únicamente con el fin de operar el Servicio y prestártelo.</li>
+              <li>Declaras que tienes derecho a subir ese contenido y que no infringe derechos de terceros.</li>
+              <li>No subas datos sensibles (por ejemplo, de salud, origen racial o étnico, orientación política, convicciones religiosas, vida sexual o datos biométricos) ni datos personales de otras personas sin su autorización.</li>
+              <li>Las imágenes y fotos que subas se alojan en direcciones web que puede abrir cualquier persona que conozca la dirección exacta. No subas imágenes privadas o confidenciales.</li>
+            </ul>
+
+            <h3>6. Uso aceptable</h3>
+            <p>Está prohibido usar el Servicio para: actividades ilegales; publicar contenido que vulnere derechos de autor, la intimidad o el buen nombre de otras personas; contenido que vulnere los derechos de niños, niñas y adolescentes;
+              distribuir software malicioso; intentar acceder a cuentas o tableros ajenos o vulnerar la seguridad del Servicio; saturarlo o automatizar su uso sin autorización; y suplantar la identidad de otras personas.</p>
+
+            <h3>7. Propiedad intelectual del Servicio</h3>
+            <p>La marca, el diseño y el código del Servicio pertenecen a nosotros o a quienes nos los licencian. No recibes ningún derecho sobre ellos, salvo el de usar el Servicio de forma personal conforme a estos Términos.</p>
+
+            <h3>8. Disponibilidad y cambios</h3>
+            <p>Pueden producirse interrupciones por mantenimiento o causas ajenas a nuestro control. Podemos modificar o suspender funciones del Servicio y procuraremos avisar los cambios relevantes.</p>
+
+            <h3>9. Limitación de responsabilidad</h3>
+            <p>El Servicio se ofrece «tal como está» y según disponibilidad. En la medida que la ley lo permita, no respondemos por daños indirectos ni por la pérdida de contenido causada por circunstancias fuera de nuestro control; te recomendamos conservar copia de lo importante.
+              Nada de lo aquí dispuesto limita los derechos irrenunciables que la ley colombiana te reconoce ni las responsabilidades que la ley no permite excluir.</p>
+
+            <h3>10. Suspensión y terminación</h3>
+            <p>Puedes dejar de usar el Servicio en cualquier momento y solicitar la eliminación de tu cuenta escribiendo a <mark class="pendiente">[COMPLETAR: correo]</mark>.
+              Podemos suspender o cancelar las cuentas que incumplan estos Términos. Al eliminar tu cuenta, trataremos tus datos según la Política de Tratamiento de Datos Personales.</p>
+
+            <h3>11. Cambios en estos Términos</h3>
+            <p>Publicaremos la nueva versión con su fecha. Si los cambios afectan las finalidades del tratamiento de tus datos personales, te pediremos una nueva autorización.</p>
+
+            <h3>12. Ley aplicable y jurisdicción</h3>
+            <p>Estos Términos se rigen por las leyes de la República de Colombia. Las controversias se someterán a los jueces competentes de <mark class="pendiente">[COMPLETAR: ciudad]</mark>,
+              sin perjuicio de las competencias de la Superintendencia de Industria y Comercio y de los derechos que te asisten como consumidor.</p>
+          </div>
+
+          <!-- ================= POLÍTICA DE DATOS PERSONALES ================= -->
+          <div class="tab-pane fade" id="panel-privacidad" role="tabpanel" aria-labelledby="pestana-privacidad" tabindex="0">
+            <h2 class="h5">Política de Tratamiento de Datos Personales</h2>
+            <p class="text-secondary">Versión 2026-11-14 · Última actualización: 14 de noviembre de 2026</p>
+
+            <h3>1. Marco legal</h3>
+            <p>Esta política se elabora conforme a los artículos 15 y 20 de la Constitución Política de Colombia, la Ley Estatutaria 1581 de 2012, el Decreto 1377 de 2013 (compilado en el Decreto 1074 de 2015) y las demás normas que los modifiquen o complementen.</p>
+
+            <h3>2. Responsable del tratamiento</h3>
+            <ul>
+              <li><strong>Responsable:</strong> <mark class="pendiente">[COMPLETAR: nombre completo o razón social]</mark></li>
+              <li><strong>Identificación:</strong> <mark class="pendiente">[COMPLETAR: cédula o NIT]</mark></li>
+              <li><strong>Domicilio:</strong> <mark class="pendiente">[COMPLETAR: dirección, ciudad, departamento]</mark>, Colombia</li>
+              <li><strong>Correo para consultas y reclamos:</strong> <mark class="pendiente">[COMPLETAR: correo]</mark></li>
+              <li><strong>Teléfono:</strong> <mark class="pendiente">[COMPLETAR: teléfono]</mark></li>
+            </ul>
+
+            <h3>3. Datos que tratamos</h3>
+            <div class="table-responsive">
+              <table class="table table-sm align-middle">
+                <thead><tr><th>Dato</th><th>Para qué</th><th>¿Obligatorio?</th></tr></thead>
+                <tbody>
+                  <tr><td>Correo electrónico</td><td>Crear y acceder a tu cuenta; comunicaciones del Servicio</td><td>Sí</td></tr>
+                  <tr><td>Nombre de usuario</td><td>Identificarte dentro del Servicio</td><td>Sí</td></tr>
+                  <tr><td>Contraseña</td><td>Autenticación. Se guarda cifrada por nuestro proveedor de autenticación; no podemos verla</td><td>Sí</td></tr>
+                  <tr><td>Teléfono</td><td>Contacto y soporte</td><td>No</td></tr>
+                  <tr><td>Foto de perfil</td><td>Personalizar tu cuenta</td><td>No</td></tr>
+                  <tr><td>Contenido de tus tableros (textos, listas, enlaces, imágenes, flechas)</td><td>Prestarte el Servicio</td><td>Lo que tú decidas crear</td></tr>
+                  <tr><td>Fecha y versión de tu aceptación</td><td>Conservar prueba de tu autorización</td><td>Sí</td></tr>
+                  <tr><td>Datos técnicos de conexión (dirección IP, tipo de navegador)</td><td>Seguridad, prevención de abusos y verificación anti-robots</td><td>Se generan automáticamente</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3>4. Datos sensibles</h3>
+            <p>No solicitamos datos sensibles, es decir, aquellos que afectan tu intimidad o cuyo uso indebido puede generar discriminación. Si decides incluirlos en tu contenido, lo haces bajo tu responsabilidad;
+              no estás obligado a autorizar su tratamiento y te recomendamos no incluirlos.</p>
+
+            <h3>5. Niños, niñas y adolescentes</h3>
+            <p>El Servicio está dirigido exclusivamente a mayores de 18 años. No recolectamos intencionalmente datos de menores de edad; si detectamos una cuenta de un menor, la eliminaremos.
+              Si crees que un menor se registró, escríbenos al correo indicado.</p>
+
+            <h3>6. Finalidades del tratamiento</h3>
+            <ul>
+              <li>Crear, administrar y autenticar tu cuenta.</li>
+              <li>Prestarte el Servicio: guardar y mostrar tus tableros.</li>
+              <li>Garantizar la seguridad: prevenir fraudes, accesos no autorizados y registros automatizados.</li>
+              <li>Atender tus consultas, solicitudes y reclamos.</li>
+              <li>Enviarte comunicaciones relacionadas con el Servicio (confirmación de correo, cambios en los términos, avisos de seguridad).</li>
+              <li>Cumplir obligaciones legales y atender requerimientos de autoridades competentes.</li>
+            </ul>
+            <p>No vendemos tus datos personales ni los usamos con fines publicitarios.</p>
+
+            <h3>7. Autorización</h3>
+            <p>Tu autorización es previa, expresa e informada: la otorgas marcando la casilla de aceptación al registrarte. Guardamos la fecha y la versión de tu aceptación como prueba. Puedes revocarla en cualquier momento (ver sección 9), lo que puede implicar la eliminación de tu cuenta si el dato es indispensable para prestar el Servicio.</p>
+
+            <h3>8. Proveedores y transferencia o transmisión internacional</h3>
+            <p>Para operar el Servicio usamos proveedores tecnológicos que tratan datos por nuestra cuenta:</p>
+            <ul>
+              <li><strong>Supabase:</strong> base de datos, autenticación y almacenamiento de archivos. Región de los servidores: <mark class="pendiente">[COMPLETAR: región elegida en tu proyecto]</mark>.</li>
+              <li><strong>Cloudflare (Turnstile):</strong> verificación anti-robots durante el registro y el inicio de sesión.</li>
+              <li><strong>Redes de distribución de contenido (CDN):</strong> entregan recursos del sitio, como hojas de estilo y scripts.</li>
+            </ul>
+            <p>Estos proveedores pueden estar ubicados fuera de Colombia. Al aceptar esta política autorizas de forma expresa e inequívoca la transferencia y transmisión de tus datos a ellos, exclusivamente para las finalidades descritas.
+              Procuramos contratar proveedores que ofrezcan niveles adecuados de protección de datos. Los administradores del Servicio pueden acceder a tus datos y tableros cuando sea necesario para soporte, seguridad o cumplimiento legal, y dejamos registro de esos accesos.</p>
+
+            <h3>9. Tus derechos como titular</h3>
+            <ul>
+              <li>Conocer, actualizar y rectificar tus datos personales.</li>
+              <li>Solicitar prueba de la autorización que nos diste, salvo los casos en que la ley no la exige.</li>
+              <li>Ser informado, previa solicitud, del uso que se ha dado a tus datos.</li>
+              <li>Presentar quejas ante la Superintendencia de Industria y Comercio por infracciones a la ley.</li>
+              <li>Revocar la autorización y/o solicitar la supresión de tus datos cuando en el tratamiento no se respeten los principios, derechos y garantías constitucionales y legales.</li>
+              <li>Acceder de forma gratuita a tus datos personales que hayan sido objeto de tratamiento.</li>
+            </ul>
+
+            <h3>10. Cómo ejercer tus derechos</h3>
+            <p>Escríbenos a <mark class="pendiente">[COMPLETAR: correo]</mark> desde el correo de tu cuenta, indicando tu nombre de usuario, el derecho que quieres ejercer y una descripción de tu solicitud.</p>
+            <ul>
+              <li><strong>Consultas:</strong> las respondemos en un máximo de 10 días hábiles. Si no podemos, te informaremos el motivo y la nueva fecha, que no superará 5 días hábiles adicionales.</li>
+              <li><strong>Reclamos</strong> (corrección, actualización, supresión, revocatoria o presunto incumplimiento): los resolvemos en un máximo de 15 días hábiles, prorrogables por 8 días hábiles más. Si el reclamo está incompleto, te pediremos corregirlo dentro de los 5 días siguientes a su recepción.</li>
+            </ul>
+            <p>Solo puedes presentar una queja ante la Superintendencia de Industria y Comercio (<a href="https://www.sic.gov.co" target="_blank" rel="noopener noreferrer">www.sic.gov.co</a>) después de haber agotado este trámite ante nosotros.</p>
+
+            <h3>11. Seguridad</h3>
+            <p>Aplicamos medidas técnicas y organizativas razonables: conexión cifrada (HTTPS), contraseñas almacenadas de forma cifrada, reglas de acceso que permiten ver tus tableros solo a ti y a quienes autorices, y verificación anti-robots. Ninguna medida es infalible; si detectamos un incidente que afecte tus datos, actuaremos conforme a la ley.</p>
+
+            <h3>12. Conservación y supresión</h3>
+            <p>Conservamos tus datos mientras tu cuenta esté activa. Al eliminarla, suprimimos tus datos personales y tu contenido en un plazo razonable, salvo los que debamos conservar por una obligación legal o para defendernos en reclamaciones.</p>
+
+            <h3>13. Almacenamiento en tu navegador y terceros</h3>
+            <p>Para mantener tu sesión guardamos un identificador en el almacenamiento local de tu navegador. No usamos cookies publicitarias. El proveedor anti-robots y las redes de distribución de contenido pueden usar tecnologías propias; te recomendamos consultar sus políticas.</p>
+
+            <h3>14. Cambios en esta política</h3>
+            <p>Publicaremos la nueva versión con su fecha. Si los cambios afectan las finalidades del tratamiento, te lo comunicaremos y te pediremos una nueva autorización.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
   </div>
-
-  <p class="signup">¿Ya tienes cuenta? <a rel="noopener noreferrer" href="inicioseccion.html">Inicia sesión</a></p>
 </div>
 
-</main>
-<!-- Footer -->
+<!-- Pie de página -->
 <footer class="border-top py-4 text-secondary small">
   <div class="container d-flex flex-wrap justify-content-between gap-3">
     <div><strong class="text-dark">Dario Pex</strong><br>© 2026 Todos los derechos reservados.</div>
     <ul class="list-inline mb-0">
+      <li class="list-inline-item me-3"><a href="#" class="text-secondary" data-bs-toggle="modal" data-bs-target="#modal-legal" data-pestana="terminos">Términos</a></li>
+      <li class="list-inline-item"><a href="#" class="text-secondary" data-bs-toggle="modal" data-bs-target="#modal-legal" data-pestana="privacidad">Datos personales</a></li>
     </ul>
   </div>
 </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

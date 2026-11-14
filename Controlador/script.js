@@ -1,5 +1,6 @@
 import * as Usuario from '../Modelo/usuarioModel.js';
 import * as Tablero from '../Modelo/tableroModel.js';
+import { montarCaptcha } from './captcha.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -18,10 +19,41 @@ if ($('#login-form')) paginaLogin();
 function paginaRegistro() {
   const form = $('#registro-form');
   const errorPass = $('#password-error');
+  const errorCaptcha = $('#captcha-error');
+  const ayuda = $('#ayuda-registro');
+  const edad = $('#acepto-edad');
+  const terminos = $('#acepto-terminos');
   const boton = form.querySelector('button[type="submit"]');
+  let enviando = false;
+
+  const captcha = montarCaptcha('#captcha-registro', () => {
+    errorCaptcha.hidden = true;
+    actualizarBoton();
+  });
+
+  // El botón solo se activa con las dos casillas marcadas y el captcha completado
+  function listo() {
+    return edad.checked && terminos.checked && !!captcha.token();
+  }
+  function actualizarBoton() {
+    const ok = listo();
+    boton.disabled = !ok || enviando;
+    ayuda.hidden = ok;
+  }
+  edad.addEventListener('change', actualizarBoton);
+  terminos.addEventListener('change', actualizarBoton);
+  actualizarBoton();
+
+  // Los enlaces de "Términos" y "Datos personales" abren la pestaña correspondiente
+  document.querySelectorAll('[data-pestana]').forEach((enlace) => {
+    enlace.addEventListener('click', () => {
+      const pestana = $(`#pestana-${enlace.dataset.pestana}`);
+      if (pestana && window.bootstrap) window.bootstrap.Tab.getOrCreateInstance(pestana).show();
+    });
+  });
 
   form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    e.preventDefault();   // evita que la página se recargue y que los datos aparezcan en la URL
 
     const correo = $('#email').value.trim();
     const nombre = $('#usuario').value.trim();
@@ -31,11 +63,20 @@ function paginaRegistro() {
     errorPass.hidden = pass === pass2;
     if (pass !== pass2) return;
 
-    boton.disabled = true;
+    if (!edad.checked || !terminos.checked) {
+      mostrarMensaje('Debes confirmar que eres mayor de 18 años y aceptar los términos y la política de datos.', true);
+      return;
+    }
+    const token = captcha.token();
+    if (!token) { errorCaptcha.hidden = false; return; }
+
+    enviando = true;
+    actualizarBoton();
     mostrarMensaje('Creando tu cuenta...');
     try {
       const { session } = await Usuario.registrar({
         correo, contrasena: pass, nombre_usuario: nombre,
+        aceptaTerminos: true, captchaToken: token,   // tu modelo actual ignora estos dos campos sin problema
       });
       if (session) {
         location.href = 'contenido.html';
@@ -46,11 +87,12 @@ function paginaRegistro() {
     } catch (err) {
       mostrarMensaje(err.message, true);
     } finally {
-      boton.disabled = false;
+      enviando = false;
+      captcha.reiniciar();       // el token solo sirve una vez; esto también vuelve a bloquear el botón
+      actualizarBoton();
     }
   });
 }
-
 // ---------------- Inicio de sesión ----------------
 function paginaLogin() {
   const form = $('#login-form');
