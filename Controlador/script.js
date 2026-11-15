@@ -340,6 +340,7 @@ function activarTableros() {
   const boton = form.querySelector('button[type="submit"]');
 
   cargarTableros();
+  activarEliminarTablero();
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -377,16 +378,65 @@ async function cargarTableros() {
     const plantilla = $('#plantilla-tablero');
     tableros.forEach((t) => {
       const tarjeta = plantilla.content.cloneNode(true);
-      tarjeta.querySelector('.tablero-nombre').textContent = t.nombre;
-      tarjeta.querySelector('.tablero-rol').textContent =
-        t.propietario_id === perfilActual.id_usuarios ? 'Propietario' : 'Colaborador';
+      const esPropio = t.propietario_id === perfilActual.id_usuarios;
+
+      tarjeta.querySelector('.tablero-nombre').textContent = t.nombre;   // textContent evita inyección de HTML
+      tarjeta.querySelector('.tablero-rol').textContent = esPropio ? 'Propietario' : 'Colaborador';
       tarjeta.querySelector('.tablero-abrir').href = `tablero.html?id=${t.id}`;
+
+      const borrar = tarjeta.querySelector('.tablero-eliminar');
+      if (esPropio || perfilActual.rol === 'admin') {
+        borrar.addEventListener('click', () => pedirEliminarTablero(t));
+      } else {
+        borrar.remove();                                                // un colaborador no puede eliminar
+      }
       lista.appendChild(tarjeta);
     });
   } catch (err) {
     $('#tableros-cargando').hidden = true;
     mostrarMensaje(err.message, true);
   }
+}
+
+// ---------------- Eliminar tableros ----------------
+let tableroAEliminar = null;
+
+function pedirEliminarTablero(t) {
+  tableroAEliminar = t;
+  $('#eliminar-nombre').textContent = t.nombre;
+  $('#mensaje-eliminar').textContent = '';
+  window.bootstrap?.Modal.getOrCreateInstance($('#modal-eliminar-tablero')).show();
+}
+
+function activarEliminarTablero() {
+  const modalEl = $('#modal-eliminar-tablero');
+  const msg = $('#mensaje-eliminar');
+  const boton = $('#btn-confirmar-eliminar');
+
+  boton.addEventListener('click', async () => {
+    if (!tableroAEliminar) return;
+    const { id, nombre } = tableroAEliminar;        // se copian antes de cerrar la ventana, que limpia la variable
+
+    boton.disabled = true;
+    msg.style.color = '';
+    msg.textContent = 'Eliminando...';
+    try {
+      await Tablero.eliminarTablero(id);
+      window.bootstrap?.Modal.getOrCreateInstance(modalEl).hide();
+      mostrarMensaje(`Tablero «${nombre}» eliminado`);
+      await cargarTableros();
+    } catch (err) {
+      msg.style.color = '#b00020';
+      msg.textContent = err.message;
+    } finally {
+      boton.disabled = false;
+    }
+  });
+
+  modalEl.addEventListener('hidden.bs.modal', () => {
+    tableroAEliminar = null;
+    msg.textContent = '';
+  });
 }
 
 // Esta línea debe quedar al FINAL del archivo, después de declarar todo lo anterior
