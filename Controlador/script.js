@@ -16,6 +16,7 @@ if ($('#registro-form')) paginaRegistro();
 if ($('#login-form')) paginaLogin();
 
 // ---------------- Registro ----------------
+
 function paginaRegistro() {
   const form = $('#registro-form');
   const errorPass = $('#password-error');
@@ -26,6 +27,27 @@ function paginaRegistro() {
   const boton = form.querySelector('button[type="submit"]');
   let enviando = false;
 
+  // Mostrar u ocultar contraseñas
+  function togglePassword(id, boton) {
+    const password = document.getElementById(id);
+
+    if (password.type === "password") {
+      password.type = "text";
+      boton.textContent = "Ocultar";
+    } else {
+      password.type = "password";
+      boton.textContent = "Ver";
+    }
+  }
+
+  // Eventos de los botones para ver las contraseñas
+  form.querySelectorAll('.password-container button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const input = btn.parentElement.querySelector('input');
+      togglePassword(input.id, btn);
+    });
+  });
+
   const captcha = montarCaptcha('#captcha-registro', () => {
     errorCaptcha.hidden = true;
     actualizarBoton();
@@ -35,11 +57,13 @@ function paginaRegistro() {
   function listo() {
     return edad.checked && terminos.checked && !!captcha.token();
   }
+
   function actualizarBoton() {
     const ok = listo();
     boton.disabled = !ok || enviando;
     ayuda.hidden = ok;
   }
+
   edad.addEventListener('change', actualizarBoton);
   terminos.addEventListener('change', actualizarBoton);
   actualizarBoton();
@@ -53,7 +77,7 @@ function paginaRegistro() {
   });
 
   form.addEventListener('submit', async (e) => {
-    e.preventDefault();   // evita que la página se recargue y que los datos aparezcan en la URL
+    e.preventDefault();
 
     const correo = $('#email').value.trim();
     const nombre = $('#usuario').value.trim();
@@ -67,17 +91,23 @@ function paginaRegistro() {
       mostrarMensaje('Debes confirmar que eres mayor de 18 años y aceptar los términos y la política de datos.', true);
       return;
     }
+
     const token = captcha.token();
-    if (!token) { errorCaptcha.hidden = false; return; }
+    if (!token) {
+      errorCaptcha.hidden = false;
+      return;
+    }
 
     enviando = true;
     actualizarBoton();
     mostrarMensaje('Creando tu cuenta...');
+
     try {
       const { session } = await Usuario.registrar({
         correo, contrasena: pass, nombre_usuario: nombre,
-        aceptaTerminos: true, captchaToken: token,   // tu modelo actual ignora estos dos campos sin problema
+        aceptaTerminos: true, captchaToken: token,
       });
+
       if (session) {
         location.href = 'contenido.html';
       } else {
@@ -88,11 +118,12 @@ function paginaRegistro() {
       mostrarMensaje(err.message, true);
     } finally {
       enviando = false;
-      captcha.reiniciar();       // el token solo sirve una vez; esto también vuelve a bloquear el botón
+      captcha.reiniciar();
       actualizarBoton();
     }
   });
 }
+
 // ---------------- Inicio de sesión ----------------
 function paginaLogin() {
   const form = $('#login-form');
@@ -174,8 +205,8 @@ function pintarAvatar(contenedor, p) {
 function pintarPerfil() {
   const p = perfilActual;
   $('#nombre-navbar').textContent = p.nombre_usuario;
-  pintarAvatar($('#avatar'), p);                                              // NUEVO
-  pintarAvatar($('#foto-preview'), p);                                        // NUEVO
+  pintarAvatar($('#avatar'), p);                                              
+  pintarAvatar($('#foto-preview'), p);                                        
   $('#inicio-nombre').textContent = p.nombre_usuario;
   $('#inicio-correo').textContent = p.correo;
   $('#inicio-rol').textContent = p.rol;

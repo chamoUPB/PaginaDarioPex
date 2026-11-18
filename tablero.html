@@ -65,49 +65,16 @@
           <path d="M0,0 L10,5 L0,10 z" fill="#9aa0ab" stroke="none"/>
         </marker>
       </defs>
-      <g id="grupo-flechas">
-        <!-- EJEMPLO: el controlador reemplaza esto -->
-        <path d="M300,130 C360,130 360,210 420,210" marker-end="url(#punta-flecha)"/>
-      </g>
+      <g id="grupo-flechas"></g>
     </svg>
 
     <!-- Capa de elementos -->
     <div class="capa-elementos" id="capa-elementos">
-      <!-- EJEMPLOS: el controlador los reemplaza con los elementos reales del tablero -->
+      <!-- EJEMPLOS -->
       <article class="elemento nota" data-tipo="nota" data-color="amarillo" tabindex="0"
                style="left:80px; top:80px; width:220px">
         <div class="elemento-contenido" data-campo="texto" contenteditable="false"
-             role="textbox" aria-multiline="true" aria-label="Texto de la nota">Ejemplo de nota. Haz doble clic para editarla.</div>
-        <span class="redimensionar" aria-hidden="true"></span>
-      </article>
-
-      <article class="elemento lista" data-tipo="lista_tareas" data-color="gris" tabindex="0"
-               style="left:420px; top:150px; width:240px">
-        <h3 class="lista-titulo" data-campo="titulo" contenteditable="false">TAREA</h3>
-        <ul class="tareas">
-          <li class="tarea">
-            <input type="checkbox" class="tarea-casilla" aria-label="Completada">
-            <span class="tarea-texto" contenteditable="false">Primera tarea</span>
-            <button type="button" class="tarea-borrar" aria-label="Eliminar tarea">×</button>
-          </li>
-          <li class="tarea">
-            <input type="checkbox" class="tarea-casilla" aria-label="Completada" checked>
-            <span class="tarea-texto" contenteditable="false">Tarea completada</span>
-            <button type="button" class="tarea-borrar" aria-label="Eliminar tarea">×</button>
-          </li>
-        </ul>
-        <form class="tarea-nueva">
-          <input type="text" maxlength="500" placeholder="+ Añadir tarea" aria-label="Nueva tarea">
-        </form>
-        <span class="redimensionar" aria-hidden="true"></span>
-      </article>
-
-      <article class="elemento enlace" data-tipo="enlace" data-color="gris" tabindex="0"
-               style="left:120px; top:300px; width:220px">
-        <a class="enlace-vinculo" href="https://example.com" target="_blank" rel="noopener noreferrer">
-          <span class="enlace-titulo" data-campo="titulo">Ejemplo de enlace</span>
-          <span class="enlace-dominio">example.com</span>
-        </a>
+             role="textbox">CARGANDO NOTAS</div>
       </article>
     </div>
   </div>
