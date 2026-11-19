@@ -425,6 +425,23 @@ function actualizarVacio() {
 // =====================================================================
 // Selección y barra del elemento
 // =====================================================================
+
+function activarDobleClick() {
+  const tablero = $('#visor');
+
+  tablero.addEventListener('dblclick', (e) => {
+    if (estado.soloLectura || estado.herramienta) return;
+
+    // Evitar crear notas encima de otros elementos
+    if (e.target.closest('.elemento')) return;
+
+    const { x, y } = coordenadas(e);
+
+    // Crear una nota en la posición del doble clic
+    colocar('nota', x, y);
+  });
+}
+
 function quitarSeleccionElemento() {
   if (estado.seleccionado) estado.nodos.get(estado.seleccionado)?.classList.remove('seleccionado');
   estado.seleccionado = null;
@@ -1125,7 +1142,7 @@ function ajustarZoom(valor) {
 // =====================================================================
 function conectarEventos() {
   const visor = $('#visor');
-
+  activarDobleClick();
   // Herramientas
   document.querySelectorAll('.herramienta').forEach((b) => {
     b.addEventListener('click', () => elegirHerramienta(b.dataset.herramienta));

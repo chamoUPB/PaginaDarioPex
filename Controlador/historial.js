@@ -32,7 +32,7 @@ export async function deshacerUltimo() {
     pilaRehacer.push(accion);
     return accion;
   } catch (err) {
-    limpiar();                             // si algo falla, el historial ya no es fiable
+    limpiar();                             
     throw err;
   } finally {
     ocupado = false;

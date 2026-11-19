@@ -1,4 +1,4 @@
-// Convierte los errores de Supabase en mensajes claros
+
 export function verificar({ data, error }) {
   if (error) {
     const mensajes = {

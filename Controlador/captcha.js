@@ -1,5 +1,5 @@
 // Verificación anti-robots (Cloudflare Turnstile)
-const SITE_KEY = '1x00000000000000000000AA';   // CLAVE DE PRUEBA: reemplázala por tu Site Key real
+const SITE_KEY = '1x00000000000000000000AA';  
 const URL_SCRIPT = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
 let cargando = null;
